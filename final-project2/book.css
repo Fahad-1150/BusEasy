@@ -1,0 +1,89 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("pics/book.png");
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 40px;
+  gap: 40px;
+}
+
+.seats {
+  display: flex;
+  gap: 20px;
+}
+
+.seat-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 50px;
+  height: 50px;
+  background: #eee;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button.booked {
+  background: gray;
+  color: #000;
+  cursor: not-allowed;
+}
+
+button.selected {
+  background-color: green;
+  color: white;
+  box-shadow: 0 0 10px lime;
+}
+
+.booking-form {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 10px;
+  color: black;
+  min-width: 300px;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.buy-button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: green;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.buy-button:hover {
+  background: darkgreen;
+}
