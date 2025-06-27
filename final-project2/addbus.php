@@ -1,5 +1,5 @@
 <?php
-// Enable all errors and display them
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -114,19 +114,19 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Sanitize bus number to avoid SQL injection and illegal table name chars
+    
     $bus_number = preg_replace('/[^a-zA-Z0-9_]/', '_', $_POST['bus_number']);
     $from = $conn->real_escape_string($_POST['from']);
     $to = $conn->real_escape_string($_POST['to']);
     $dispute_time = $conn->real_escape_string($_POST['time']);
     $date = $conn->real_escape_string($_POST['date']); 
 
-    // Insert route info
+    // Insert route 
     $sql_route = "INSERT INTO route (bus_number, from_location, to_location, dispute_time, date) 
                   VALUES ('$bus_number', '$from', '$to', '$dispute_time', '$date')";
 
     if ($conn->query($sql_route) === TRUE) {
-        // Create bus table with exact columns
+        // Create bus table with 
         $sql_create_table = "CREATE TABLE `$bus_number` (
             bus_number VARCHAR(50),
             from_location VARCHAR(255),
@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $available_seats = implode(',', range(1, 40));
             $booked_seats = "";
 
-            // Insert initial row
+            // Insert
             $sql_insert_initial = "INSERT INTO `$bus_number` 
                 (bus_number, from_location, to_location, dispute_time, available_seats, booked_seats)
                 VALUES ('$bus_number', '$from', '$to', '$dispute_time', '$available_seats', '$booked_seats')";

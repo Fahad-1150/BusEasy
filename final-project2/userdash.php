@@ -77,6 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus'], $_POST[
 // Fetch all bookings for logged-in user
 $sql = "
     SELECT 
+  
+    bs.id,
+    bs.booking_date,
+
         bs.booking_date,
         bs.from_location,
         bs.to_location,
@@ -140,29 +144,11 @@ $result = $stmt->get_result();
 <?php if (isset($_GET['cancel_success'])): ?>
 <script>alert("Seat cancellation successful.");</script>
 <?php endif; ?>
-<script>
-function printBooking(rowId) {
-    var row = document.getElementById(rowId);
-    if (!row) return;
-    var printWindow = window.open('', '', 'height=600,width=800');
-    printWindow.document.write('<html><head><title>Print Booking</title>');
-    printWindow.document.write('<style>body{font-family: Arial, sans-serif;} table {border-collapse: collapse; width: 100%;} td, th {border: 1px solid #aaa; padding: 8px;}</style>');
-    printWindow.document.write('</head><body>');
-    printWindow.document.write('<h2>Booking Details</h2>');
-    printWindow.document.write('<table>');
-    printWindow.document.write('<tr><th>Field</th><th>Value</th></tr>');
-    var cells = row.querySelectorAll('td');
-    var headers = ['Booking Date','From','To','Bus Number','Dispute Time','Date','Seat Number','Phone'];
-    for (var i=0; i < headers.length; i++) {
-        printWindow.document.write('<tr><td>' + headers[i] + '</td><td>' + cells[i].innerText + '</td></tr>');
-    }
-    printWindow.document.write('</table>');
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-}
-</script>
+
+
+
+
+
 </head>
 <body>
 
@@ -209,7 +195,10 @@ function printBooking(rowId) {
                         <input type='hidden' name='cancel_seat' value='" . htmlspecialchars($row['seat_number']) . "' />
                         <button type='submit' class='btn btn-cancel'>Cancel</button>
                       </form>
-                      <button class='btn btn-print' onclick='printBooking(\"{$rowId}\")'>Print</button>
+                     <a href='printticket.php?booking_id=" . urlencode($row['id']) . "' target='_blank'>
+    <button type='button' class='btn btn-print'>Print</button>
+</a>
+
                     </td>";
               echo "</tr>";
           }

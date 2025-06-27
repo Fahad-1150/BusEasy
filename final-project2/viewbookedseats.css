@@ -1,0 +1,100 @@
+body {
+    margin: 0; 
+    padding: 20px; 
+    font-family: Arial, sans-serif;
+    background-image: linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url("pics/admin dash.png");
+    background-size: cover; 
+    background-position: center;
+    color: white;
+    background-repeat: no-repeat;
+background-attachment: fixed;
+
+  }
+  h2 {
+    text-align: center; 
+    margin-bottom: 30px;
+  }
+  table {
+    width: 100%; 
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  th, td {
+    padding: 12px; 
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+  }
+  th {
+    background-color: #d3d3d3;
+    font-weight: bold;
+  }
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  input[type="text"], input[type="date"], input[type="number"] {
+    width: 90%;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid #aaa;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  button {
+    padding: 8px 15px;
+    margin: 3px;
+    font-weight: bold;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: transform 0.3s;
+  }
+  button.edit-btn {
+    background: linear-gradient(to right, #e0e0e0, #ffffff);
+    color: black;
+  }
+  button.edit-btn:hover {
+    transform: scale(1.05);
+  }
+  button.cancel-btn {
+    background: #ff4d4d;
+    color: white;
+  }
+  button.cancel-btn:hover {
+    background: #cc0000;
+  }
+  button.print-btn {
+    background: #4caf50;
+    color: white;
+  }
+  button.print-btn:hover {
+    background: #2e7d32;
+  }
+  .message {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 15px;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    text-align: center;
+  }
+  .error {
+    max-width: 700px;
+    margin: 0 auto 20px;
+    padding: 15px;
+    background: #f8d7da;
+    color: #721c24;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+    text-align: center;
+  }
+  .inline-form {
+    margin: 0;
+  }
+  
