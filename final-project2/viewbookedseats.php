@@ -164,54 +164,7 @@ $conn->close();
                     <button type="submit" name="action" value="edit" class="edit-btn" title="Update Booking">Edit</button>
                     <button type="submit" name="action" value="cancel" class="cancel-btn" title="Cancel Booking" onclick="return confirm('Are you sure to cancel this booking?');">Cancel</button>
                     <button type="button" class="print-btn" title="Print Ticket" onclick="window.open('printticket.php?booking_id=<?php echo $row['id']; ?>', '_blank')">Print</button>
-                    <script>
-function printBooking(rowId) {
-    var row = document.getElementById(rowId);
-    if (!row) return;
-
-    // Use your logo path relative to your project root (htdocs/final-project2)
-    var logoPath = 'pics/logowithoutbackground.png';
-
-    var printWindow = window.open('', '', 'height=600,width=800');
-    printWindow.document.write('<html><head><title>Print Booking</title>');
-    printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; }');
-    printWindow.document.write('.header { display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 20px; }');
-    printWindow.document.write('.logo { position: absolute; left: 0; width: 80px; height: auto; }');
-    printWindow.document.write('.title { font-size: 24px; font-weight: bold; }');
-    printWindow.document.write('.table-container { display: flex; justify-content: center; }');
-    printWindow.document.write('table { border-collapse: collapse; width: 100%; max-width: 600px; }');
-    printWindow.document.write('td, th { border: 1px solid #aaa; padding: 8px; }');
-    printWindow.document.write('</style>');
-    printWindow.document.write('</head><body>');
-
-    printWindow.document.write('<div class="header">');
-    printWindow.document.write('<img src="' + logoPath + '" alt="BusEasy Logo" class="logo" />');
-    printWindow.document.write('<div class="title">BusEasy</div>');
-    printWindow.document.write('</div>');
-
-    printWindow.document.write('<div class="table-container">');
-    printWindow.document.write('<table>');
-    printWindow.document.write('<tr><th>Field</th><th>Value</th></tr>');
-
-    var cells = row.querySelectorAll('td');
-    var headers = ['Booking Date','From','To','Bus Number','Dispute Time','Date','Seat Number','Phone'];
-
-    for (var i = 0; i < headers.length; i++) {
-        printWindow.document.write('<tr><td>' + headers[i] + '</td><td>' + cells[i].innerText + '</td></tr>');
-    }
-
-    printWindow.document.write('</table>');
-    printWindow.document.write('</div>');
-
-    printWindow.document.write('</body></html>');
-
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-}
-</script>
-
+                
                 </td>
             </form>
         </tr>

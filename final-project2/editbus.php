@@ -10,19 +10,19 @@ if (!isset($_GET['bus'])) {
 
 $bus_number = $conn->real_escape_string($_GET['bus']);
 
-// Initialize variables
+
 $from = $to = $dispute_time = $date = "";
 $available_seats = $booked_seats = "";
 $message = "";
 
-// Handle form submission to update data
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $from = $conn->real_escape_string($_POST['from_location']);
     $to = $conn->real_escape_string($_POST['to_location']);
     $dispute_time = $conn->real_escape_string($_POST['dispute_time']);
     $date = $conn->real_escape_string($_POST['date']);
 
-    // Update route table
+    
     $update_route_sql = "UPDATE route SET 
         from_location='$from', 
         to_location='$to', 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         WHERE bus_number='$bus_number'";
 
     if ($conn->query($update_route_sql) === TRUE) {
-        // Update bus table (e.g., bus000)
+       
         $update_bus_sql = "UPDATE `$bus_number` SET 
             from_location='$from', 
             to_location='$to', 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Load existing data from route table
+
 $route_sql = "SELECT * FROM route WHERE bus_number='$bus_number' LIMIT 1";
 $route_res = $conn->query($route_sql);
 if ($route_res && $route_res->num_rows > 0) {
@@ -61,7 +61,7 @@ if ($route_res && $route_res->num_rows > 0) {
     die("Route data not found for bus: $bus_number");
 }
 
-// Load available and booked seats from bus table
+
 $available_count = 0;
 $booked_count = 0;
 if ($conn->query("SHOW TABLES LIKE '$bus_number'")->num_rows > 0) {

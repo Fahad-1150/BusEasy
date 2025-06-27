@@ -1,5 +1,5 @@
 <?php
-// printticket.php
+
 
 $conn = new mysqli("localhost", "root", "", "buseasy");
 if ($conn->connect_error) {
@@ -99,7 +99,7 @@ $conn->close();
 </head>
 <body>
 
-<!-- Logo -->
+
 <img src="/final-project2/pics/logowithoutbackground.png" alt="BusEasy Logo" class="logo" />
 
 <h2>BusEasy</h2>

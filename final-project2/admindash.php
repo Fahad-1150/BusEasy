@@ -36,7 +36,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Function to check if table exists
+
 function tableExists($conn, $tableName) {
     $result = $conn->query("SHOW TABLES LIKE '$tableName'");
     return $result && $result->num_rows > 0;
