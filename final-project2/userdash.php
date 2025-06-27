@@ -19,80 +19,58 @@ if ($conn->connect_error) {
 }
 
 // Handle cancel request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus']) && isset($_POST['cancel_seat'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus'], $_POST['cancel_seat'])) {
     $busNum = $_POST['cancel_bus'];
     $cancelSeat = $_POST['cancel_seat'];
 
-    // 1. Get route row (main route info with available seats)
-    $stmtRoute = $conn->prepare("SELECT available_seats FROM `$busNum` WHERE bus_number = ? AND from_location IS NOT NULL");
-    $stmtRoute->bind_param("s", $busNum);
-    $stmtRoute->execute();
-    $resRoute = $stmtRoute->get_result();
-    $routeRow = $resRoute->fetch_assoc();
+    // 1. Get current available_seats and booked_seats from busnumber table (ignore phone here)
+    $stmtSeats = $conn->prepare("SELECT available_seats, booked_seats FROM `$busNum` WHERE from_location IS NOT NULL LIMIT 1");
+    $stmtSeats->execute();
+    $resSeats = $stmtSeats->get_result();
+    $rowSeats = $resSeats->fetch_assoc();
+    $stmtSeats->close();
+
     $availableSeatsArr = [];
-    if ($routeRow && !empty($routeRow['available_seats'])) {
-        $availableSeatsArr = array_filter(array_map('trim', explode(',', $routeRow['available_seats'])));
-    }
+    $bookedSeatsArr = [];
 
-    // 2. Find booking row(s) for this user & bus where seat is booked
-    $stmtBooking = $conn->prepare("SELECT booked_seats, Seat_number FROM `$busNum` WHERE bus_number = ? AND Phone = ?");
-    $stmtBooking->bind_param("ss", $busNum, $phone);
-    $stmtBooking->execute();
-    $resBooking = $stmtBooking->get_result();
-
-    while ($bookingRow = $resBooking->fetch_assoc()) {
-        $bookedSeatsArr = [];
-        if (!empty($bookingRow['booked_seats'])) {
-            $bookedSeatsArr = array_filter(array_map('trim', explode(',', $bookingRow['booked_seats'])));
+    if ($rowSeats) {
+        if (!empty($rowSeats['available_seats'])) {
+            $availableSeatsArr = array_filter(array_map('intval', explode(',', $rowSeats['available_seats'])));
         }
-        // Check if the seat is booked here
-        if (in_array($cancelSeat, $bookedSeatsArr)) {
-            // Remove this seat from booked seats
-            $newBookedSeats = array_filter($bookedSeatsArr, fn($s) => $s != $cancelSeat);
-
-            if (count($newBookedSeats) === 0) {
-                // No seats left in this booking row -> delete it
-                $stmtDelete = $conn->prepare("DELETE FROM `$busNum` WHERE bus_number = ? AND Phone = ? AND FIND_IN_SET(?, booked_seats) > 0");
-                $stmtDelete->bind_param("sss", $busNum, $phone, $cancelSeat);
-                $stmtDelete->execute();
-                $stmtDelete->close();
-            } else {
-                // Update booking row with new booked seats
-                $newBookedSeatsStr = implode(',', $newBookedSeats);
-                $stmtUpdate = $conn->prepare("UPDATE `$busNum` SET booked_seats = ? WHERE bus_number = ? AND Phone = ? AND FIND_IN_SET(?, booked_seats) > 0");
-                $stmtUpdate->bind_param("ssss", $newBookedSeatsStr, $busNum, $phone, $cancelSeat);
-                $stmtUpdate->execute();
-                $stmtUpdate->close();
-            }
-
-            // Add seat back to available seats if not present
-            if (!in_array($cancelSeat, $availableSeatsArr)) {
-                $availableSeatsArr[] = $cancelSeat;
-                sort($availableSeatsArr);
-            }
-
-            break; // seat processed, no need to continue
+        if (!empty($rowSeats['booked_seats'])) {
+            $bookedSeatsArr = array_filter(array_map('intval', explode(',', $rowSeats['booked_seats'])));
         }
     }
-    $resBooking->close();
-    $stmtBooking->close();
-    $stmtRoute->close();
 
-    // 3. Update route row's available_seats
+    // 2. Remove the canceled seat from booked_seats array
+    $bookedSeatsArr = array_filter($bookedSeatsArr, fn($s) => $s != intval($cancelSeat));
+
+    // 3. Add the canceled seat back to available_seats if not already there
+    if (!in_array(intval($cancelSeat), $availableSeatsArr)) {
+        $availableSeatsArr[] = intval($cancelSeat);
+    }
+
+    // Sort seats for neatness
+    sort($availableSeatsArr, SORT_NUMERIC);
+    sort($bookedSeatsArr, SORT_NUMERIC);
+
+    // 4. Update busnumber table with new seats strings
     $newAvailableSeatsStr = implode(',', $availableSeatsArr);
-    $stmtUpdateRoute = $conn->prepare("UPDATE `$busNum` SET available_seats = ? WHERE bus_number = ? AND from_location IS NOT NULL");
-    $stmtUpdateRoute->bind_param("ss", $newAvailableSeatsStr, $busNum);
-    $stmtUpdateRoute->execute();
-    $stmtUpdateRoute->close();
+    $newBookedSeatsStr = implode(',', $bookedSeatsArr);
 
-    // ✅ Delete from booked_seats table
-    $stmtDeleteBookedSeats = $conn->prepare("DELETE FROM booked_seats WHERE bus_number = ? AND seat_number = ? AND phone = ?");
-    $stmtDeleteBookedSeats->bind_param("sis", $busNum, $cancelSeat, $phone);
-    $stmtDeleteBookedSeats->execute();
-    $stmtDeleteBookedSeats->close();
+    $stmtUpdateSeats = $conn->prepare("UPDATE `$busNum` SET available_seats = ?, booked_seats = ? WHERE from_location IS NOT NULL LIMIT 1");
+    $stmtUpdateSeats->bind_param("ss", $newAvailableSeatsStr, $newBookedSeatsStr);
+    $stmtUpdateSeats->execute();
+    $stmtUpdateSeats->close();
+
+    // 5. Remove the seat from master booked_seats table for the logged-in user
+    $stmtDeleteMaster = $conn->prepare("DELETE FROM booked_seats WHERE bus_number = ? AND seat_number = ? AND phone = ?");
+    $stmtDeleteMaster->bind_param("sis", $busNum, $cancelSeat, $phone);
+    $stmtDeleteMaster->execute();
+    $stmtDeleteMaster->close();
 
     // Redirect to avoid form resubmission
-    header("Location: " . $_SERVER['PHP_SELF']);
+    header("Location: " . $_SERVER['PHP_SELF'] . "?cancel_success=1");
     exit();
 }
 
@@ -159,6 +137,9 @@ $result = $stmt->get_result();
     color: white;
   }
 </style>
+<?php if (isset($_GET['cancel_success'])): ?>
+<script>alert("Seat cancellation successful.");</script>
+<?php endif; ?>
 <script>
 function printBooking(rowId) {
     var row = document.getElementById(rowId);

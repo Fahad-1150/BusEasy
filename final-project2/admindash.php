@@ -10,9 +10,9 @@
       <img src="pics/1.png" alt="Bus Logo" class="logo">
       <h1>BusEasy</h1> 
       <div class="button-group">
-  <a href="addbus.php" class="add-bus">+ Add bus</a>
-  <a href="searchbus.php" class="search-bus">🔍 Search</a>
-</div>
+        <a href="addbus.php" class="add-bus">+ Add bus</a>
+        <a href="searchbus.php" class="search-bus">🔍 Search</a>
+      </div>
     </div>
 
     <table>
@@ -36,6 +36,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Function to check if table exists
+function tableExists($conn, $tableName) {
+    $result = $conn->query("SHOW TABLES LIKE '$tableName'");
+    return $result && $result->num_rows > 0;
+}
+
 $sql = "SELECT * FROM route";
 $result = $conn->query($sql);
 
@@ -47,29 +53,31 @@ if ($result->num_rows > 0) {
         $time = $row['dispute_time'];
         $date = isset($row['date']) ? $row['date'] : 'N/A'; 
 
-        $seat_sql = "SELECT available_seats, booked_seats FROM `$bus_number` WHERE bus_number = '$bus_number'";
-        $seat_result = $conn->query($seat_sql);
-
         $available_count = 0;
         $booked_count = 0;
 
-        if ($seat_result && $seat_result->num_rows > 0) {
-            $seat_data = $seat_result->fetch_assoc();
-            $available = array_filter(explode(",", $seat_data['available_seats']));
-            $booked = array_filter(explode(",", $seat_data['booked_seats']));
-            $available_count = count($available);
-            $booked_count = count($booked);
+        if (tableExists($conn, $bus_number)) {
+            $seat_sql = "SELECT available_seats, booked_seats FROM `$bus_number` WHERE bus_number = '$bus_number' LIMIT 1";
+            $seat_result = $conn->query($seat_sql);
+
+            if ($seat_result && $seat_result->num_rows > 0) {
+                $seat_data = $seat_result->fetch_assoc();
+                $available = array_filter(explode(",", $seat_data['available_seats']));
+                $booked = array_filter(explode(",", $seat_data['booked_seats']));
+                $available_count = count($available);
+                $booked_count = count($booked);
+            }
         }
 
         echo "<tr>";
-        echo "<td><a href='book.php?bus=$bus_number' class='bus-btn'>$bus_number</a></td>";
-        echo "<td>$from</td>";
-        echo "<td>$to</td>";
-        echo "<td>$time</td>";
-        echo "<td>$date</td>"; 
-        echo "<td>$available_count</td>";
-        echo "<td>$booked_count</td>";
-        echo "<td><a href='editbus.php?bus=$bus_number' class='action-btn'>Edit</a></td>";
+        echo "<td><a href='book.php?bus=" . htmlspecialchars($bus_number) . "' class='bus-btn'>" . htmlspecialchars($bus_number) . "</a></td>";
+        echo "<td>" . htmlspecialchars($from) . "</td>";
+        echo "<td>" . htmlspecialchars($to) . "</td>";
+        echo "<td>" . htmlspecialchars($time) . "</td>";
+        echo "<td>" . htmlspecialchars($date) . "</td>"; 
+        echo "<td>" . $available_count . "</td>";
+        echo "<td>" . $booked_count . "</td>";
+        echo "<td><a href='editbus.php?bus=" . urlencode($bus_number) . "' class='action-btn'>Edit</a></td>";
         echo "</tr>";
     }
 } else {

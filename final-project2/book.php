@@ -10,12 +10,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
-if (isset($_GET['success'])) {
-    echo "<script>alert('Booking successful!');</script>";
-}
-
-
 if (!empty($bus_number)) {
     $busInfoSql = "SELECT * FROM route WHERE bus_number=?";
     $stmt = $conn->prepare($busInfoSql);
@@ -33,128 +27,74 @@ if (!empty($bus_number)) {
     die("Invalid bus number.");
 }
 
-
+// Handle POST booking submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'] ?? '';
-    $phone = $_POST['phone'] ?? '';
-    $seat_numbers = $_POST['seat_number'] ?? '';
-    $bus_number_post = $_POST['bus_number'] ?? '';
+    $name = trim($_POST['name'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $seat_numbers_arr = $_POST['seat_number'] ?? [];
 
-    if (empty($name) || empty($phone) || empty($seat_numbers)) {
-        echo "<script>alert('Please fill all fields and select seats.');</script>";
+    if (empty($name) || empty($phone) || empty($seat_numbers_arr)) {
+        echo "<script>alert('Please fill all fields and select at least one seat.');</script>";
     } else {
-        
-        $newSeatsArray = array_filter(array_map('trim', explode(',', $seat_numbers)));
+        // Convert seat numbers array to int and sort
+        $newSeatsArray = array_filter(array_map('intval', $seat_numbers_arr));
+        sort($newSeatsArray);
 
-       
-        $sqlCheck = "SELECT booked_seats FROM `$bus_number_post` WHERE bus_number = ? AND Booked_By = ?";
-        $stmtCheck = $conn->prepare($sqlCheck);
-        if (!$stmtCheck) {
-            die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
+        // Fetch current available_seats and booked_seats for this bus from bus_number table
+        $routeRowSql = "SELECT available_seats, booked_seats FROM `$bus_number` WHERE from_location IS NOT NULL LIMIT 1";
+        $result = $conn->query($routeRowSql);
+        if (!$result || $result->num_rows === 0) {
+            die("Bus seats info not found.");
         }
-        $stmtCheck->bind_param("ss", $bus_number_post, $name);
-        if (!$stmtCheck->execute()) {
-            die("Execute failed: (" . $stmtCheck->errno . ") " . $stmtCheck->error);
-        }
-        $resultCheck = $stmtCheck->get_result();
+        $row = $result->fetch_assoc();
 
-        if ($resultCheck->num_rows > 0) {
-            $row = $resultCheck->fetch_assoc();
-            $existingSeats = array_filter(array_map('trim', explode(',', $row['booked_seats'])));
-            $updatedSeats = array_unique(array_merge($existingSeats, $newSeatsArray));
-            $updatedSeatsStr = implode(',', $updatedSeats);
+        $available_seats = array_filter(array_map('intval', explode(',', $row['available_seats'])));
+        $existingBookedSeats = array_filter(array_map('intval', explode(',', $row['booked_seats'])));
 
-            $updateSql = "UPDATE `$bus_number_post` SET booked_seats = ? WHERE bus_number = ? AND Booked_By = ?";
-            $stmtUpdate = $conn->prepare($updateSql);
-            if (!$stmtUpdate) {
-                die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
-            }
-            $stmtUpdate->bind_param("sss", $updatedSeatsStr, $bus_number_post, $name);
-            if (!$stmtUpdate->execute()) {
-                die("Execute failed: (" . $stmtUpdate->errno . ") " . $stmtUpdate->error);
-            }
-            $stmtUpdate->close();
-        } else {
-            $insertSql = "INSERT INTO `$bus_number_post` (bus_number, Booked_By, booked_seats, Phone) VALUES (?, ?, ?, ?)";
-            $stmtInsert = $conn->prepare($insertSql);
-            if (!$stmtInsert) {
-                die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
-            }
-            $seatNumbersStr = implode(',', $newSeatsArray);
-            $stmtInsert->bind_param("ssss", $bus_number_post, $name, $seatNumbersStr, $phone);
-            if (!$stmtInsert->execute()) {
-                die("Execute failed: (" . $stmtInsert->errno . ") " . $stmtInsert->error);
-            }
-            $stmtInsert->close();
-        }
-        $stmtCheck->close();
+        // Remove new seats from available, add them to booked
+        $newAvailableSeats = array_diff($available_seats, $newSeatsArray);
+        $newBookedSeats = array_unique(array_merge($existingBookedSeats, $newSeatsArray));
 
-        
-        $sqlAvailable = "SELECT available_seats FROM `$bus_number_post` WHERE bus_number = ?";
-        $stmtAvailable = $conn->prepare($sqlAvailable);
-        if (!$stmtAvailable) {
-            die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
-        }
-        $stmtAvailable->bind_param("s", $bus_number_post);
-        if (!$stmtAvailable->execute()) {
-            die("Execute failed: (" . $stmtAvailable->errno . ") " . $stmtAvailable->error);
-        }
-        $resAvailable = $stmtAvailable->get_result();
-        $rowAvailable = $resAvailable->fetch_assoc();
-        $availableSeats = array_filter(array_map('trim', explode(',', $rowAvailable['available_seats'])));
-        $newAvailableSeats = array_diff($availableSeats, $newSeatsArray);
+        sort($newAvailableSeats);
+        sort($newBookedSeats);
+
         $newAvailableSeatsStr = implode(',', $newAvailableSeats);
-        $stmtAvailable->close();
+        $newBookedSeatsStr = implode(',', $newBookedSeats);
 
-        $updateAvailableSql = "UPDATE `$bus_number_post` SET available_seats = ? WHERE bus_number = ?";
-        $stmtUpdateAvailable = $conn->prepare($updateAvailableSql);
-        if (!$stmtUpdateAvailable) {
-            die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
-        }
-        $stmtUpdateAvailable->bind_param("ss", $newAvailableSeatsStr, $bus_number_post);
-        if (!$stmtUpdateAvailable->execute()) {
-            die("Execute failed: (" . $stmtUpdateAvailable->errno . ") " . $stmtUpdateAvailable->error);
-        }
-        $stmtUpdateAvailable->close();
+        // Update bus_number table seat info
+        $updateSeatsSql = "UPDATE `$bus_number` SET available_seats = ?, booked_seats = ? WHERE from_location IS NOT NULL LIMIT 1";
+        $stmtUpdateSeats = $conn->prepare($updateSeatsSql);
+        $stmtUpdateSeats->bind_param("ss", $newAvailableSeatsStr, $newBookedSeatsStr);
+        $stmtUpdateSeats->execute();
+        $stmtUpdateSeats->close();
 
-        
-        $bookingDate = date('Y-m-d H:i:s'); 
+        // Insert into global booked_seats table for each seat
+        $bookingDate = date('Y-m-d');
         foreach ($newSeatsArray as $seatNum) {
             $insertBookingSql = "INSERT INTO booked_seats (booking_date, from_location, to_location, bus_number, seat_number, phone) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtBooking = $conn->prepare($insertBookingSql);
-            if (!$stmtBooking) {
-                die("Prepare failed: (" . $conn->errno . ") " . $conn->error);
-            }
-            $stmtBooking->bind_param("ssssds", 
-                $bookingDate, 
-                $busInfo['from_location'], 
-                $busInfo['to_location'], 
-                $bus_number_post, 
-                $seatNum, 
-                $phone
-            );
-            if (!$stmtBooking->execute()) {
-                die("Execute failed: (" . $stmtBooking->errno . ") " . $stmtBooking->error);
-            }
+            // seat_number as string, phone as string
+            $seatNumStr = (string)$seatNum;
+            $stmtBooking->bind_param("ssssss", $bookingDate, $busInfo['from_location'], $busInfo['to_location'], $bus_number, $seatNumStr, $phone);
+            $stmtBooking->execute();
             $stmtBooking->close();
         }
 
-        
-        header("Location: ?bus=" . urlencode($bus_number_post) . "&success=1");
+        // Redirect to avoid form resubmission and show success alert
+        header("Location: ?bus=" . urlencode($bus_number) . "&success=1");
         exit();
     }
 }
 
-
-$seatSql = "SELECT booked_seats FROM `$bus_number`";
+// Fetch booked seats to disable checkboxes
+$seatSql = "SELECT booked_seats FROM `$bus_number` WHERE from_location IS NOT NULL LIMIT 1";
 $seatResult = $conn->query($seatSql);
 $booked_seats = [];
 if ($seatResult && $seatResult->num_rows > 0) {
-    while ($seatData = $seatResult->fetch_assoc()) {
-        $seats = array_filter(array_map('intval', explode(",", $seatData['booked_seats'])));
-        $booked_seats = array_merge($booked_seats, $seats);
+    $seatData = $seatResult->fetch_assoc();
+    if (!empty($seatData['booked_seats'])) {
+        $booked_seats = array_filter(array_map('intval', explode(',', $seatData['booked_seats'])));
     }
-    $booked_seats = array_unique($booked_seats);
 }
 
 $conn->close();
@@ -163,31 +103,46 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Bus Seat Booking</title>
-  <link rel="stylesheet" href="book.css" />
-  <script>
-    function selectSeat(button) {
-      if (!button.classList.contains('booked')) {
-        button.classList.toggle('selected');
+<meta charset="UTF-8" />
+<title>Bus Seat Booking - <?= htmlspecialchars($bus_number) ?></title>
+<link rel="stylesheet" href="book.css" />
+<style>
+  /* Styling checkboxes as seats */
+  .seat-checkbox {
+    display: none;
+  }
 
-        
-        const selectedSeats = [];
-        document.querySelectorAll('.seat-column button.selected').forEach(btn => {
-          selectedSeats.push(btn.innerText);
-        });
+  .seat-label {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background: #eee;
+    border-radius: 10px;
+    font-weight: bold;
+    line-height: 50px;
+    text-align: center;
+    margin: 3px;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.3s;
+    color: black;
+  }
 
-        document.getElementById('seat_input').value = selectedSeats.join(',');
-        document.getElementById('selected_seats_display').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None';
-      }
-    }
-  </script>
-  <style>
-    
-    .booked { background-color: #888; color: #fff; cursor: not-allowed; }
-    .selected { background-color: #4CAF50; color: white; }
-    button { margin: 3px; padding: 10px; cursor: pointer; }
-  </style>
+  .seat-checkbox:checked + .seat-label {
+    background-color: green;
+    color: white;
+    box-shadow: 0 0 10px lime;
+  }
+
+  .seat-label.booked {
+    background-color: gray;
+    color: black;
+    cursor: not-allowed;
+  }
+</style>
+<?php if (isset($_GET['success'])): ?>
+<script>alert("Booking successful!");</script>
+<?php endif; ?>
 </head>
 <body>
   <div class="container">
@@ -196,12 +151,13 @@ $conn->close();
         <!-- Seats 1-20 -->
         <?php for ($i = 1; $i <= 20; $i += 2): ?>
           <div class="row">
-            <?php for ($j = $i; $j <= $i + 1; $j++): 
+            <?php for ($j = $i; $j <= $i + 1; $j++):
               $isBooked = in_array($j, $booked_seats);
-              $class = $isBooked ? 'booked' : '';
               $disabled = $isBooked ? 'disabled' : '';
+              $labelClass = $isBooked ? 'seat-label booked' : 'seat-label';
             ?>
-            <button onclick="selectSeat(this)" class="<?= $class ?>" <?= $disabled ?>><?= $j ?></button>
+              <input type="checkbox" name="seat_number[]" value="<?= $j ?>" id="seat<?= $j ?>" class="seat-checkbox" <?= $disabled ?> form="bookingForm" />
+              <label for="seat<?= $j ?>" class="<?= $labelClass ?>"><?= $j ?></label>
             <?php endfor; ?>
           </div>
         <?php endfor; ?>
@@ -211,12 +167,13 @@ $conn->close();
         <!-- Seats 21-40 -->
         <?php for ($i = 21; $i <= 40; $i += 2): ?>
           <div class="row">
-            <?php for ($j = $i; $j <= $i + 1; $j++): 
+            <?php for ($j = $i; $j <= $i + 1; $j++):
               $isBooked = in_array($j, $booked_seats);
-              $class = $isBooked ? 'booked' : '';
               $disabled = $isBooked ? 'disabled' : '';
+              $labelClass = $isBooked ? 'seat-label booked' : 'seat-label';
             ?>
-            <button onclick="selectSeat(this)" class="<?= $class ?>" <?= $disabled ?>><?= $j ?></button>
+              <input type="checkbox" name="seat_number[]" value="<?= $j ?>" id="seat<?= $j ?>" class="seat-checkbox" <?= $disabled ?> form="bookingForm" />
+              <label for="seat<?= $j ?>" class="<?= $labelClass ?>"><?= $j ?></label>
             <?php endfor; ?>
           </div>
         <?php endfor; ?>
@@ -231,11 +188,8 @@ $conn->close();
       <p><strong>Time:</strong> <?= htmlspecialchars($busInfo['dispute_time']) ?></p>
       <p><strong>Date:</strong> <?= htmlspecialchars($busInfo['date']) ?></p>
 
-      <form method="POST" action="">
+      <form method="POST" action="" id="bookingForm">
         <input type="hidden" name="bus_number" value="<?= htmlspecialchars($bus_number) ?>" />
-        <input type="hidden" name="seat_number" id="seat_input" required />
-
-        <label>Selected Seats: <span id="selected_seats_display">None</span></label><br><br>
 
         <input type="text" name="name" placeholder="Enter Name" required />
         <input type="text" name="phone" placeholder="Enter Phone" required />
