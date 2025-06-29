@@ -1,0 +1,56 @@
+create database buseasy;
+ADMIN LOG PAGE-----
+
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+
+dash page----
+
+
+CREATE TABLE route (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bus_number VARCHAR(50) NOT NULL UNIQUE,
+    from_location VARCHAR(100) NOT NULL,
+    to_location VARCHAR(100) NOT NULL,
+    dispute_time VARCHAR(50) NOT NULL,
+    date DATE
+);
+INSERT INTO route (bus_number, from_location, to_location, dispute_time, date)
+VALUES 
+('BUS123', 'Dhaka', 'Chittagong', '10:00 AM', '2025-06-25'),
+('BUS456', 'Sylhet', 'Khulna', '02:00 PM', '2025-06-25');
+
+
+CREATE TABLE localuser (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    number VARCHAR(15) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+
+CREATE TABLE booked_seats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_date DATE NOT NULL,
+    from_location VARCHAR(100) NOT NULL,
+    to_location VARCHAR(100) NOT NULL,
+    bus_number VARCHAR(50) NOT NULL,
+    seat_number INT NOT NULL,
+    phone VARCHAR(15) NOT NULL
+);
+
+route price_________
+
+
+
+CREATE TABLE route_price (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    from_location VARCHAR(100) NOT NULL,
+    to_location VARCHAR(100) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
