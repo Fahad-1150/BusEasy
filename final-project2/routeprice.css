@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: white;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  .container {
+    width: 90%;
+    margin: auto;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #00bcd4;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #222;
+    color: white;
+  }
+  
+  table th, table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #444;
+  }
+  
+  thead {
+    background-color: #333;
+  }
+  
+  .add-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    margin-bottom: 15px;
+    border-radius: 5px;
+  }
+  
+  .add-btn:hover {
+    background-color: #218838;
+  }
+  
+  .edit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-right: 5px;
+  }
+  
+  .edit-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .delete-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  
+  .delete-btn:hover {
+    background-color: #c82333;
+  }
+  

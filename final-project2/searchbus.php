@@ -30,7 +30,7 @@
           $from = $conn->real_escape_string($_POST['from']);
           $to = $conn->real_escape_string($_POST['to']);
 
-        
+
           $sql = "SELECT * FROM route WHERE date = '$date' AND from_location = '$from' AND to_location = '$to'";
           $result = $conn->query($sql);
 
@@ -45,6 +45,7 @@
                           <th>Date</th>
                           <th>Available Seats</th>
                           <th>Booked Seats</th>
+                          <th>Price</th>
                         </tr>
                       </thead>
                       <tbody>";
@@ -64,10 +65,19 @@
 
                   if ($seat_result && $seat_result->num_rows > 0) {
                       $seat_data = $seat_result->fetch_assoc();
-                      $available = array_filter(explode(",", $seat_data['available_seats']));
-                      $booked = array_filter(explode(",", $seat_data['booked_seats']));
+                      $available = array_filter(explode(',', $seat_data['available_seats']));
+                      $booked = array_filter(explode(',', $seat_data['booked_seats']));
                       $available_count = count($available);
                       $booked_count = count($booked);
+                  }
+
+                  //price
+                  $price = "N/A";
+                  $price_sql = "SELECT price FROM route_price WHERE from_location = '$from' AND to_location = '$to' LIMIT 1";
+                  $price_result = $conn->query($price_sql);
+                  if ($price_result && $price_result->num_rows > 0) {
+                      $price_row = $price_result->fetch_assoc();
+                      $price = $price_row['price'];
                   }
 
                   echo "<tr>";
@@ -78,6 +88,7 @@
                   echo "<td>$date</td>";
                   echo "<td>$available_count</td>";
                   echo "<td>$booked_count</td>";
+                  echo "<td>৳ $price</td>";
                   echo "</tr>";
               }
 

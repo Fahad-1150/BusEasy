@@ -8,6 +8,7 @@ body {
   color: white;
 }
 
+
 .container {
   padding: 20px;
 }
@@ -63,7 +64,7 @@ body {
   gap: 20px;
 }
 
-.add-bus,
+.add-bus,.set-price,
 .search-bus {
   background: linear-gradient(to right, #e0e0e0, #ffffff);
   border: none;

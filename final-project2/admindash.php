@@ -12,6 +12,7 @@
       <div class="button-group">
         <a href="addbus.php" class="add-bus">+ Add bus</a>
         <a href="searchbus.php" class="search-bus">🔍 Search</a>
+        <a href="routeprice.php" class="set-price">💰 Set Price</a>
       </div>
     </div>
 
