@@ -1,3 +1,4 @@
+**Pages in BusEasy**
 <img width="945" height="452" alt="{8185F3C2-E5FF-4A14-935A-89FFDC908515}" src="https://github.com/user-attachments/assets/6eb8a7cf-83dd-4e0b-8309-25e42b3e2c1f" />
 <img width="950" height="442" alt="{80A5D302-2E22-4AAE-9FE2-B3A87B3A86D6}" src="https://github.com/user-attachments/assets/d46b2bef-751a-4358-ad67-1f08fcfcddb7" />
 <img width="941" height="448" alt="{8F7A651A-C4FC-45F2-8AF8-741796EFF417}" src="https://github.com/user-attachments/assets/7874a7db-22b6-485b-ac2e-8ece6a644e29" />
@@ -11,4 +12,5 @@
 <img width="957" height="453" alt="{CA5EA3A6-4C30-41BE-B805-0D55213FE6FD}" src="https://github.com/user-attachments/assets/4a3b947a-23f5-41bf-8c2a-4d1a3c00f246" />
 <img width="960" height="447" alt="{3D3D9332-D414-4F3E-9BF8-BB4375266F0E}" src="https://github.com/user-attachments/assets/bbf6f9ad-0298-404c-8534-39d4af49c6d4" />
 <img width="956" height="454" alt="{D96D050B-6B4F-4C52-83ED-E57500543FD2}" src="https://github.com/user-attachments/assets/81570d33-42f5-444a-99b2-a834b58c1f49" />
+<img width="1886" height="909" alt="image" src="https://github.com/user-attachments/assets/f293b49e-99d6-4a97-bdd8-512a375de46b" />
 <img width="944" height="453" alt="{2E4A86A5-839F-4DC5-B077-22D3FFEBBE78}" src="https://github.com/user-attachments/assets/88e8ce3d-5729-4c12-aabb-b96d0a25e57c" />
