@@ -27,7 +27,7 @@ if (!empty($bus_number)) {
     die("Invalid bus number.");
 }
 
-// ✅ Fetch price per seat
+
 $price_per_seat = 0;
 $priceSql = "SELECT price FROM route_price WHERE from_location = ? AND to_location = ? LIMIT 1";
 $priceStmt = $conn->prepare($priceSql);
@@ -192,7 +192,7 @@ $conn->close();
       <p><strong>Time:</strong> <?= htmlspecialchars($busInfo['dispute_time']) ?></p>
       <p><strong>Date:</strong> <?= htmlspecialchars($busInfo['date']) ?></p>
 
-      <!-- ✅ Price Info -->
+      
       <p><strong>Price per Seat:</strong> ৳ <?= number_format($price_per_seat, 2) ?></p>
       
         <?php

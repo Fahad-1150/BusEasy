@@ -56,7 +56,7 @@ if ($route_res && $route_res->num_rows > 0) {
     $from = htmlspecialchars($route_row['from_location']);
     $to = htmlspecialchars($route_row['to_location']);
     $dispute_time = htmlspecialchars($route_row['dispute_time']);
-    $date = $route_row['date'];  // date may be NULL, handle in form
+    $date = $route_row['date'];  
 } else {
     die("Route data not found for bus: $bus_number");
 }

@@ -64,7 +64,7 @@ h2 {
 }
 
 .seat.user-booked {
-    background: #2a8dde; /* blue */
+    background: #2a8dde; 
     color: white;
     cursor: pointer;
 }

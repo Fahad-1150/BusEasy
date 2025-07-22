@@ -18,12 +18,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle cancel request
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus'], $_POST['cancel_seat'])) {
     $busNum = $_POST['cancel_bus'];
     $cancelSeat = $_POST['cancel_seat'];
 
-    // 1. Get current available_seats and booked_seats from busnumber table (ignore phone here)
+    
     $stmtSeats = $conn->prepare("SELECT available_seats, booked_seats FROM `$busNum` WHERE from_location IS NOT NULL LIMIT 1");
     $stmtSeats->execute();
     $resSeats = $stmtSeats->get_result();
@@ -42,19 +42,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus'], $_POST[
         }
     }
 
-    // 2. Remove the canceled seat from booked_seats array
+    
     $bookedSeatsArr = array_filter($bookedSeatsArr, fn($s) => $s != intval($cancelSeat));
 
-    // 3. Add the canceled seat back to available_seats if not already there
+    
     if (!in_array(intval($cancelSeat), $availableSeatsArr)) {
         $availableSeatsArr[] = intval($cancelSeat);
     }
 
-    // Sort seats for neatness
+    
     sort($availableSeatsArr, SORT_NUMERIC);
     sort($bookedSeatsArr, SORT_NUMERIC);
 
-    // 4. Update busnumber table with new seats strings
+    
     $newAvailableSeatsStr = implode(',', $availableSeatsArr);
     $newBookedSeatsStr = implode(',', $bookedSeatsArr);
 
@@ -63,18 +63,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_bus'], $_POST[
     $stmtUpdateSeats->execute();
     $stmtUpdateSeats->close();
 
-    // 5. Remove the seat from master booked_seats table for the logged-in user
+    
     $stmtDeleteMaster = $conn->prepare("DELETE FROM booked_seats WHERE bus_number = ? AND seat_number = ? AND phone = ?");
     $stmtDeleteMaster->bind_param("sis", $busNum, $cancelSeat, $phone);
     $stmtDeleteMaster->execute();
     $stmtDeleteMaster->close();
 
-    // Redirect to avoid form resubmission
+    
     header("Location: " . $_SERVER['PHP_SELF'] . "?cancel_success=1");
     exit();
 }
 
-// Fetch all bookings for logged-in user
+
 $sql = "
     SELECT 
   
