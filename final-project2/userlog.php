@@ -1,5 +1,11 @@
 <?php
 session_start();
+if (isset($_GET['auto_login']) && isset($_GET['phone'])) {
+    $_SESSION['phone'] = $_GET['phone'];
+    header("Location: userdash.php");
+    exit();
+}
+
 
 
 $host = 'localhost';

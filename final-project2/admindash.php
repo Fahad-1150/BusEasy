@@ -13,6 +13,7 @@
         <a href="addbus.php" class="add-bus">+ Add bus</a>
         <a href="searchbus.php" class="search-bus">🔍 Search</a>
         <a href="routeprice.php" class="set-price">💰 Set Price</a>
+        <a href="showuser.php" class="show-user">👤 Show User</a>
       </div>
     </div>
 
